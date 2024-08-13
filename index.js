@@ -42,9 +42,9 @@ app.use(session({
     },
 }));
 
-app.use('/', authRouter);
+app.use('/auth', authRouter);
 app.use('/attendance', attendanceRouter);
-app.use('/admin', userRouter);
+app.use('/user', userRouter);
 
 app.listen(process.env.PORT || 5000, () => {
     console.log('Server is running on port 3000');

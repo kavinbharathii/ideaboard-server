@@ -4,7 +4,7 @@ import userController from '../controllers/user.controller.js';
 
 const router = express.Router();
 
-router.get('/guards/all', userController.getAllAttendance);
-router.get('/guards/:userid', userController.getUserAttendance);
+router.get('/admin/all', userController.getAllAttendance);
+router.get('/guards/myattendance', userController.getUserAttendance);
 
 export default router;

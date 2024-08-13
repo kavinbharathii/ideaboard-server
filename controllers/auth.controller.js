@@ -2,7 +2,7 @@
 import { User } from "../models/user.model.js";
 import bcrypt from 'bcryptjs';
 
-const registerPost = async (req, res) => {
+const postRegister = async (req, res) => {
     const { username, password, isGuard, phoneNumber, lastSubmitted } = req.body;
     const hashedPassword = bcrypt.hashSync(password, 10);
     const alreadyExistingUser = await User.findOne({ username });
@@ -33,7 +33,7 @@ const registerPost = async (req, res) => {
     }
 }
 
-const loginPost = async (req, res) => {
+const postLogin = async (req, res) => {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
 
@@ -53,22 +53,60 @@ const loginPost = async (req, res) => {
     return res.status(200).send('Logged in successfully');
 }
 
-const isSignedIn = async (req, res) => {
+const getLogout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(400).send('Error logging out');
+        }
+        return res.status(200).send('Logged out successfully');
+    });
+}
+
+const getAuthInfo = async (req, res) => {
+    console.log("Get auth info end point hit");
     if (req.session.userid) {
         const user = await User.findById(req.session.userid);
 
-        return res.status(200).json({
-            username: user.username
+        if (!user) {
+            return res.status(201).json({
+                isLoggedIn: false,
+                isAdmin: false,
+                message: 'User not found'
+            });
+        }
+
+        if (user.username !== 'admin') {
+            return res.status(201).json({
+                isLoggedIn: true,
+                isAdmin: false,
+                message: "User not authorized"
+            })
+        }
+
+        return res.status(201).json({
+            isLoggedIn: true,
+            isAdmin: true,
+            message: "User is authorized as admin"
         });
     } else {
-        return res.status(200).json({
-            data: "You are not logged in"
+        return res.status(201).json({
+            message: "User is not logged in",
+            isLoggedIn: false,
+            isAdmin: false
         });
     }
 }
 
+const getImage = (req, res) => {
+    const image = req.params.image;
+    console.log(image);
+    res.sendFile(image, { root: './uploads' });
+}
+
 export default {
-    registerPost,
-    loginPost,
-    isSignedIn
+    postRegister,
+    postLogin,
+    getLogout,
+    getAuthInfo,
+    getImage
 }

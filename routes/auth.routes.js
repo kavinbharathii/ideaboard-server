@@ -4,19 +4,10 @@ import authController from '../controllers/auth.controller.js';
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-    console.log(req.session);
-    res.send('Auth route');
-});
-
-router.get('/:image', (req, res) => {
-    const image = req.params.image;
-    console.log(image);
-    res.sendFile(image, { root: './uploads' });
-});
-
-router.post('/register', authController.registerPost);
-router.post('/login', authController.loginPost);
-router.get('/issigned', authController.isSignedIn);
+router.get('/info', authController.getAuthInfo);
+router.post('/register', authController.postRegister);
+router.post('/login', authController.postLogin);
+router.get('/logout', authController.getLogout);
+router.get('/getimage/:image', authController.getImage);
 
 export default router;

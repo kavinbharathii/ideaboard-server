@@ -5,25 +5,23 @@ import moment from 'moment';
 
 const checkInAttendance = async (req, res) => {
     console.log("Check In post Endpoint hit");
-    const { username, latitude, longitude } = req.body;
+    const { latitude, longitude } = req.body;
+    const userid = req.session.userid;
+    const user = await User.findById(userid);
+
+    if (!user) {
+        console.log("User not found");
+        return res.status(401).json({
+            message: "User not found"
+        });
+    }
+
+    const oneHourAgo = moment().subtract(1, 'hour');
+    if (user.lastSubmitted && moment(user.lastSubmitted).isAfter(oneHourAgo)) {
+        return res.status(400).send('You can only submit once per hour');
+    }
 
     try {
-        const user = await User.findOne({ username });
-
-        if (!user) {
-            console.log("User not found");
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
-
-        // console.log(`User found: ${user}`);
-
-        const oneHourAgo = moment().subtract(1, 'hour');
-        if (user.lastSubmitted && moment(user.lastSubmitted).isAfter(oneHourAgo)) {
-            return res.status(400).send('You can only submit once per hour');
-        }
-
         const attendance = new Attendance({
             user: user.username,
             selfie: req.file.path,
@@ -31,14 +29,12 @@ const checkInAttendance = async (req, res) => {
             longitude
         });
 
-        // console.log(`Attendance created: ${attendance}`);
-
         // save the attendance
         try {
             await attendance.save();
         } catch (error) {
             console.log("Error saving attendance");
-            return res.status(400).json({
+            return res.status(500).json({
                 message: error.message
             });
         }
